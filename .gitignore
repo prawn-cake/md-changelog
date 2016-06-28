@@ -1,0 +1,6 @@
+*.pyc
+.idea
+.env
+.vagrant
+.coverage
+.tox
