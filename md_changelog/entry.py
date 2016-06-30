@@ -3,6 +3,8 @@ import abc
 
 import re
 
+from md_changelog import tokens
+
 from md_changelog.exceptions import ChangelogError
 from md_changelog.tokens import Version, Date, Message
 
@@ -22,9 +24,7 @@ class Evaluable(object):
 
 
 class LogEntry(Evaluable):
-    """Changelog entry representation"""
-
-    IGNORE_LINES_RE = re.compile(r'([-=]{3,})')  # ----, ===
+    """Changelog log entry representation"""
 
     def __init__(self, version=None, date=None):
         self._version = version
@@ -53,6 +53,9 @@ class LogEntry(Evaluable):
         return '\n'.join(tokens)
 
     def add_message(self, message):
+        if not isinstance(message, tokens.Message):
+            raise ValueError('Wrong message type %r, must be %s'
+                             % (message, tokens.Message))
         self._messages.append(message)
 
     def add_version(self, version):
@@ -73,8 +76,62 @@ class LogEntry(Evaluable):
         return '{version} ({date})'.format(version=self._version.eval(),
                                            date=self._date.eval())
 
+    @staticmethod
+    def is_header(line):
+        v = Version.parse(line)
+        dt = Date.parse(line)
+        if all([v, dt]):
+            return True
+        elif any([v, dt]):
+            # Accept unreleased header
+            if v and not v.released:
+                return True
+            raise ChangelogError(
+                'Broken header %s. Version and date must be presented' % line)
+        return False
+
+    @staticmethod
+    def is_message(line):
+        return bool(Message.parse(line))
+
+    def __repr__(self):
+        return "%s(declared=%s, messages=%d)" % (self.__class__.__name__,
+                                                 self.declared,
+                                                 len(self._messages))
+
+
+class Changelog(object):
+    """Changelog representation"""
+
+    IGNORE_LINES_RE = re.compile(r'([-=]{3,})')  # ----, ===
+
+    def __init__(self, path=None, entries=None):
+        self.path = path
+        self.entries = entries or []
+
+    @property
+    def last_entry(self):
+        if self.entries:
+            return self.entries[-1]
+        return None
+
     @classmethod
-    def parse(cls, text: str, only_last=True):
+    def parse(cls, path):
+        """Parse changelog
+
+        :param path: str
+        :param only_last: bool
+        :return: Changelog
+        """
+        # TODO: write test for it
+        with open(path) as fd:
+            content = fd.read()
+        entries = cls.parse_entries(text=content, only_last=False)
+        instance = Changelog(path=path, entries=entries)
+        return instance
+
+    @classmethod
+    def parse_entries(cls, text: str, only_last=True):
         """Parse text into log entries
 
         :param text: str: raw changelog text
@@ -107,25 +164,17 @@ class LogEntry(Evaluable):
                 continue
         return entries
 
-    @staticmethod
-    def is_header(line):
-        v = Version.parse(line)
-        dt = Date.parse(line)
-        if all([v, dt]):
-            return True
-        elif any([v, dt]):
-            # Accept unreleased header
-            if v and not v.released:
-                return True
-            raise ChangelogError(
-                'Broken header %s. Version and date must be presented' % line)
-        return False
+    def new_entry(self):
+        log_entry = LogEntry()
+        self.entries.append(log_entry)
+        return log_entry
 
-    @staticmethod
-    def is_message(line):
-        return bool(Message.parse(line))
+    def sync(self):
+        """Save and sync changes
+
+        """
+        # TODO: generate string and save
+        pass
 
     def __repr__(self):
-        return "%s(declared=%s, messages=%d)" % (self.__class__.__name__,
-                                                 self.declared,
-                                                 len(self._messages))
+        return "%s(entries=%d)" % (self.__class__.__name__, len(self.entries))

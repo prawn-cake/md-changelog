@@ -2,7 +2,7 @@
 import os.path as op
 import pytest
 
-from md_changelog.entry import LogEntry
+from md_changelog.entry import LogEntry, Changelog
 
 FIXTURES_DIR = op.abspath(op.dirname(__file__)) + '/fixtures'
 
@@ -23,6 +23,6 @@ def raw_changelog():
 
 
 def test_changelog_parsing(raw_changelog):
-    entries = LogEntry.parse(text=raw_changelog)
+    entries = Changelog.parse_entries(text=raw_changelog)
     assert len(entries) == 1
     print(entries)

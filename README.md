@@ -5,7 +5,15 @@ md-changelog
 
 Command-line tool to create and manage changelog for a python project.
 Main format: markdown
+## In testing
 
+* Init feature
+
+
+## TODO
+
+* Release feature
+* Messages feature
 
 ## Features
 

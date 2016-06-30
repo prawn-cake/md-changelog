@@ -26,7 +26,9 @@ def test_init(parser):
         cfg_path = op.join(tmp_dir, main.CONFIG_NAME)
         op.isfile(cfg_path)
         config = main.get_config(cfg_path)
+        assert len(config.keys()) == 2
         assert config['md-changelog']['changelog'] == cfg_path
+        assert config['md-changelog']['vcs'] == 'git'
 
         # Check changelog and default content
         changelog_path = op.join(tmp_dir, main.CHANGELOG_NAME)

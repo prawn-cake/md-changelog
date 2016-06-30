@@ -3,6 +3,7 @@
 import os.path as op
 import sys
 
+from md_changelog.entry import Changelog
 from md_changelog.exceptions import ConfigNotFoundError
 
 sys.path.append(
@@ -28,6 +29,7 @@ INIT_TEMPLATE = 'Changelog\n' \
                 '0.1.0+1 (UNRELEASED)\n' \
                 '--------------------'
 CONFIG_NAME = '.md-changelog.cfg'
+DEFAULT_VCS = 'git'
 
 
 def init(args):
@@ -53,10 +55,11 @@ def init(args):
         # Write config
         config = configparser.ConfigParser()
         config['md-changelog'] = {
-            'changelog': cfg_path
+            'changelog': cfg_path,
+            'vcs': DEFAULT_VCS
         }
 
-        logger.debug('Writing config %s', cfg_path)
+        logger.info('Writing config %s', cfg_path)
         with open(cfg_path, 'w') as fd:
             config.write(fd)
         return True
@@ -103,7 +106,17 @@ def add_message(args):
     """
     m_type = getattr(tokens.TYPES, args.message_type)
     message = tokens.Message(message=args.message, message_type=m_type)
-    # TODO: implement last release parser
+    config = get_config(path=args.config)
+    path = config['md-changelog']['changelog']
+    changelog = Changelog.parse(path=path)
+
+    # Add message
+    # TODO: add tests
+    msg = tokens.Message(message=args.message,
+                         message_type=args.message_type)
+    changelog.last_entry.add_message(msg)
+    changelog.sync()
+
     print(message)
 
 
