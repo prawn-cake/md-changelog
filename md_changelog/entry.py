@@ -47,7 +47,7 @@ class LogEntry(Evaluable):
         return self._version
 
     def eval(self):
-        header = self.eval_header()
+        header = self._eval_header()
         text_tokens = (header,
                        '-' * len(header),
                        '\n'.join(['* {}'.format(entry.eval())
@@ -68,13 +68,13 @@ class LogEntry(Evaluable):
                 "Can't add version because it's already exists")
 
     def add_date(self, date):
-        if self._date is None:
+        if self._date is None or not self.version.released:
             self._date = date
         else:
             raise ChangelogError(
                 "Can't add date because it's already exists")
 
-    def eval_header(self):
+    def _eval_header(self):
         return '{version} ({date})'.format(version=self._version.eval(),
                                            date=self._date.eval())
 
@@ -109,6 +109,7 @@ class Changelog(object):
     INIT_VERSION = '0.1.0'
 
     def __init__(self, path, entries=None):
+        self.header = 'Changelog'
         self.path = path
         self.entries = entries or []
 
@@ -203,9 +204,11 @@ class Changelog(object):
         """Save and sync changes
         """
         with open(self.path, 'w') as fd:
+            fd.write('Changelog\n=========\n\n')
             fd.write('\n\n'.join(
                 [entry.eval() for entry in reversed(self.entries)])
             )
+            fd.write('\n\n')
 
     def __repr__(self):
         return "%s(entries=%d)" % (self.__class__.__name__, len(self.entries))

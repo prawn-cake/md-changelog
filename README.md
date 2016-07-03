@@ -5,15 +5,11 @@ md-changelog
 
 Command-line tool to create and manage changelog for a python project.
 Main format: markdown
-## In testing
-
-* Init feature
-
 
 ## TODO
 
 * Release feature
-* Messages feature
+
 
 ## Features
 
@@ -25,7 +21,7 @@ Main format: markdown
 
 ## Config
 
-.md-changelog.rc
+    .md-changelog.rc
 
 
 ## Create new changelog
@@ -54,12 +50,27 @@ Interface:
     
     md-changelog message "My message"
     md-changelog improvement "Code cleanup"
-    md-changelog bugfix
-    md-changelog feature
+    md-changelog bugfix "Fixed main loop"
+    md-changelog feature "Implemented new feature"
     
+The following changelog will be generated
+
+    Changelog
+    =========
+    
+    0.1.0+1 (UNRELEASED)
+    --------------------
+    * My message
+    * [Improvement] Code cleanup
+    * [Bugfix] Fixed main loop
+    * [Feature] Implemented new feature
+
+
+### Auto-message
+
     md-changelog auto-message "${some_var_from_git_commit_post_hook}"
     
 
-## Get current version
+## Get current (last) changelog entries
 
     md-changelog current

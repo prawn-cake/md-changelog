@@ -2,6 +2,7 @@
 import tempfile
 import pytest
 import os.path as op
+from unittest import mock
 from contextlib import contextmanager
 from md_changelog import main
 from md_changelog.entry import Changelog
@@ -69,3 +70,14 @@ def test_add_message(parser):
         changelog = Changelog.parse(path=config['md-changelog']['changelog'])
         assert len(changelog.entries) == 1
         assert len(changelog.entries[0]._messages) == 4
+
+
+def test_release(parser):
+    with mock.patch('subprocess.call') as call_mock:
+        with get_test_config() as cfg_path:
+            args = parser.parse_args(['-c', cfg_path, 'release'])
+            args.func(args)
+            assert call_mock.called is True
+            args = call_mock.call_args_list[0][0][0]
+            assert main.default_editor() in args
+            assert main.CHANGELOG_NAME in args[1]

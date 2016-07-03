@@ -2,10 +2,13 @@
 
 import argparse
 import configparser
+import functools
 import logging
 import os
 import os.path as op
 import subprocess
+
+import sys
 
 from md_changelog import tokens
 from md_changelog.entry import Changelog
@@ -21,10 +24,29 @@ logger = logging.getLogger('md-changelog')
 CHANGELOG_NAME = 'Changelog.md'
 INIT_TEMPLATE = 'Changelog\n' \
                 '=========\n\n' \
-                '0.1.0+1 (UNRELEASED)\n' \
-                '--------------------'
+                '%s+1 (UNRELEASED)\n' \
+                '--------------------' % Changelog.INIT_VERSION
 CONFIG_NAME = '.md-changelog.cfg'
 DEFAULT_VCS = 'git'
+
+
+def handler(fn):
+    """Helper decorator for command-line handler functions
+
+    :param fn: decorated function
+    :return:
+    """
+
+    @functools.wraps
+    def wrapper(args):
+        config = get_config(path=args.config)
+        res = fn(args, config)
+        return res
+    return wrapper
+
+
+def default_editor():
+    return os.getenv('EDITOR', 'vi')
 
 
 def init(args):
@@ -86,19 +108,43 @@ def get_config(path=None):
     return config
 
 
+def get_changelog(config_path):
+    """Changelog getter
+
+    :param config_path: str: path to config 
+    :return: md_changelog.entry.Changelog instance
+    """
+    config = get_config(path=config_path)
+    changelog_path = config['md-changelog']['changelog']
+    return Changelog.parse(path=changelog_path)
+
+
 def release(args):
     """Make a new release
 
     :param args: command-line args
     """
-    pass
+
+    changelog = get_changelog(args.config)
+    last_entry = changelog.last_entry
+    if not last_entry:
+        logger.info('Nothing to release')
+        sys.exit(0)
+
+    if args.version:
+        # Set up specific version
+        pass
+
+    last_entry.add_date(tokens.Date())
+    changelog.save()
+    subprocess.call([default_editor(), changelog.path])
 
 
 def edit(args):
     """Open changelog in the editor"""
     config = get_config(path=args.config)
-    editor = os.getenv('EDITOR', 'vi')
     changelog_path = config['md-changelog']['changelog']
+    editor = default_editor()
     logger.info('Call: %s %s', editor, changelog_path)
     subprocess.call([editor, changelog_path])
 
@@ -108,9 +154,7 @@ def add_message(args):
 
     :param args: command-line args
     """
-    config = get_config(path=args.config)
-    path = config['md-changelog']['changelog']
-    changelog = Changelog.parse(path=path)
+    changelog = get_changelog(args.config)
     m_type = getattr(tokens.TYPES, args.message_type)
     msg = tokens.Message(text=args.message, message_type=m_type)
     if not changelog.last_entry:
@@ -121,7 +165,18 @@ def add_message(args):
     changelog.save()
 
     logger.info('Added new %s entry to the %s (%s)',
-                args.message_type, path, str(changelog.last_entry.version))
+                args.message_type,
+                op.relpath(changelog.path),
+                str(changelog.last_entry.version))
+
+
+def show_current(args):
+    """'md-changelog current' command handler
+
+    :param args:
+    """
+    changelog = get_changelog(args.config)
+    print('\n%s\n' % changelog.last_entry.eval())
 
 
 def create_parser():
@@ -148,8 +203,13 @@ def create_parser():
         msg_p.add_argument('message', help='Enter text message here')
         msg_p.set_defaults(func=add_message, message_type=m_type)
 
+    # Open in an editor command
     edit_p = subparsers.add_parser('edit', help='Open changelog in the editor')
     edit_p.set_defaults(func=edit)
+
+    current_p = subparsers.add_parser('current',
+                                      help='Show current release log')
+    current_p.set_defaults(func=show_current)
 
     return parser
 
