@@ -75,7 +75,8 @@ def test_add_message(parser):
 def test_release(parser):
     with mock.patch('subprocess.call') as call_mock:
         with get_test_config() as cfg_path:
-            args = parser.parse_args(['-c', cfg_path, 'release'])
+            args = parser.parse_args(
+                ['-c', cfg_path, 'release', '-v', '1.0.0'])
             args.func(args)
             assert call_mock.called is True
             args = call_mock.call_args_list[0][0][0]

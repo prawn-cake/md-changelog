@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import abc
+import copy
 import re
 
 from md_changelog import tokens
@@ -60,14 +61,14 @@ class LogEntry(Evaluable):
                              % (message, tokens.Message))
         self._messages.append(message)
 
-    def add_version(self, version):
-        if self._version is None:
+    def set_version(self, version):
+        if self._version is None or not self.version.released:
             self._version = version
         else:
             raise ChangelogError(
                 "Can't add version because it's already exists")
 
-    def add_date(self, date):
+    def set_date(self, date):
         if self._date is None or not self.version.released:
             self._date = date
         else:
@@ -160,8 +161,8 @@ class Changelog(object):
                 stack.append(log_entry)
                 if not log_entry.declared:
                     # New log entry
-                    log_entry.add_version(Version.parse(line))
-                    log_entry.add_date(Date.parse(line))
+                    log_entry.set_version(Version.parse(line))
+                    log_entry.set_date(Date.parse(line))
                 else:
                     entries.append(log_entry)
                     stack.pop()
@@ -189,8 +190,8 @@ class Changelog(object):
             last_version = str(self.last_entry.version)
 
         v = Version(version_str='%s+1' % last_version)
-        log_entry.add_version(version=v)
-        log_entry.add_date(date=Date(dt=''))  # set Date as unreleased
+        log_entry.set_version(version=v)
+        log_entry.set_date(date=Date(dt=''))  # set Date as unreleased
         self.entries.append(log_entry)
         return log_entry
 
@@ -209,6 +210,13 @@ class Changelog(object):
                 [entry.eval() for entry in reversed(self.entries)])
             )
             fd.write('\n\n')
+
+    def reload(self):
+        """Reload changelog within the same instance
+
+        """
+        reloaded = self.parse(self.path)
+        self.__dict__ = copy.deepcopy(reloaded.__dict__)
 
     def __repr__(self):
         return "%s(entries=%d)" % (self.__class__.__name__, len(self.entries))

@@ -1,53 +1,39 @@
 md-changelog
 ------------
 
-**This is a design outline. Real README will be written a bit later**
-
-Command-line tool to create and manage changelog for a python project.
-Main format: markdown
-
-## TODO
-
-* Release feature
+Handy command-line tool for managing changelog for your open source projects.
 
 
-## Features
+### TODO:
 
-* Manual control of changelog
-* Git post-commit hook integration
-* Git tag integration
 * bash auto-complete with https://github.com/kislyuk/argcomplete
 * support multiple modes: list (just list of entries) and group (entries grouped by entry types: Features, Bugfixes, Improvements, etc)
+* Git post-commit hook integration
+* Git tag integration
+
 
 ## Config
 
     .md-changelog.rc
 
 
-## Create new changelog
+## Quickstart
 
-    md-changelog init [<path>]
+    md-changelog init
 
-## New release
-
-Create new release or increment previous version
-
-    md-changelog release [<version>]
-    md-changelog release 1.0.3
-    
-## Open with editor
+   
+### Open with editor
 
     md-changelog edit
     
     
-## Add entry for the last version
+### Add entry for the last version
 
 Interface:
 
-    md-changelog <entry type> [<msg>]
+    md-changelog <entry type> <msg>
     
-    # For example
-    
+    # Examples
     md-changelog message "My message"
     md-changelog improvement "Code cleanup"
     md-changelog bugfix "Fixed main loop"
@@ -66,11 +52,23 @@ The following changelog will be generated
     * [Feature] Implemented new feature
 
 
-### Auto-message
+### Auto-message (not implemented)
 
     md-changelog auto-message "${some_var_from_git_commit_post_hook}"
     
 
-## Get current (last) changelog entries
+### Get current (last) changelog entry
 
     md-changelog current
+    
+
+### New release
+
+    md-changelog release
+    md-changelog release -v 1.0.0
+
+
+### Append new unreleased entry
+
+    md-changelog append
+    

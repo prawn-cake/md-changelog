@@ -40,6 +40,9 @@ class Version(Token):
         if not matcher:
             matcher = self.VERSION_RE.search(version_str)
         self._version_dict = matcher.groupdict()
+        self._version_tuple = (self._version_dict['major'],
+                               self._version_dict['minor'],
+                               self._version_dict['patch'])
 
     @classmethod
     def parse(cls, raw_text):
@@ -58,6 +61,18 @@ class Version(Token):
     def __repr__(self):
         return '%s(version_str=%s, released=%s)' % (
             self.__class__.__name__, self.version_str, self.released)
+
+    def __gt__(self, other):
+        return self._version_tuple > other._version_tuple
+
+    def __lt__(self, other):
+        return self._version_tuple < other._version_tuple
+
+    def __ge__(self, other):
+        return self._version_tuple >= other._version_tuple
+
+    def __le__(self, other):
+        return self._version_tuple <= other._version_tuple
 
 
 class Date(Token):

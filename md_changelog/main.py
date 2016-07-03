@@ -128,14 +128,60 @@ def release(args):
     changelog = get_changelog(args.config)
     last_entry = changelog.last_entry
     if not last_entry:
-        logger.info('Nothing to release')
-        sys.exit(0)
+        logger.info('Empty changelog. Nothing to release')
+        sys.exit(99)
+
+    if last_entry.version.released:
+        logger.info("No UNRELEASED entries. Run 'md-changelog append'")
+        sys.exit(99)
 
     if args.version:
         # Set up specific version
-        pass
+        v = tokens.Version(args.version)
+        last_v = last_entry.version
+        if v <= last_v:
+            logger.info('Version must be greater than the last one: '
+                        '%s <= %s (last one)', v, last_v)
+            sys.exit(99)
+        else:
+            last_entry.set_version(v)
 
-    last_entry.add_date(tokens.Date())
+    # FIXME: raising ChangelogError when calling 'md-changelog release -v 1.0.0'
+    last_entry.set_date(tokens.Date())
+    changelog.save()
+    subprocess.call([default_editor(), changelog.path])
+
+    changelog.reload()
+    if not changelog.last_entry.version.released:
+        logger.info(
+            "WARNING: version still contains dev suffix: %s. "
+            "Run 'md-changelog edit' to fix it",
+            changelog.last_entry.version)
+        sys.exit(99)
+
+    if len(changelog.entries) > 1:
+        v_cur = changelog.last_entry.version
+        v_prev = changelog.entries[-2].version
+        if v_cur <= v_prev:
+            logger.info("WARNING: wrong release version, less or equal "
+                        "the previous one: %s (current) <= %s (previous). "
+                        "Run 'md-changelog edit' to fix it",
+                        v_cur, v_prev)
+            sys.exit(99)
+
+
+def append_entry(args):
+    """Append new changelog entry
+
+    :param args: command-line args
+    """
+    changelog = get_changelog(args.config)
+    last_entry = changelog.last_entry
+    if last_entry and not last_entry.version.released:
+        logger.info('Changelog has contained UNRELEASED entry. '
+                    'Make a release before appending a new one')
+        sys.exit(99)
+    changelog.new_entry()
     changelog.save()
     subprocess.call([default_editor(), changelog.path])
 
@@ -195,6 +241,10 @@ def create_parser():
         'release', help='Add new release entry')
     release_p.add_argument('-v', '--version', help='New release version')
     release_p.set_defaults(func=release)
+
+    append_p = subparsers.add_parser(
+        'append', help='Append a new changelog entry')
+    append_p.set_defaults(func=append_entry)
 
     # Message parsers
     for m_type in list(tokens.TYPES._asdict().keys()):
