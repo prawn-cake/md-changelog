@@ -27,24 +27,34 @@ def test_date_token(header_line):
     assert isinstance(d.dt, datetime)
     assert d.eval() == '2016-03-11'
 
+    # Test init options
+
+    # Expect that datetime.now()
+    d = tokens.Date()
+    assert isinstance(d.dt, datetime)
+
+    # '' value indicates 'unreleased'
+    d = tokens.Date(dt='')
+    assert d.dt is None
+    assert str(d) == tokens.Date.UNRELEASED
+
 
 def test_message():
-    message = tokens.Message(message='Test commit')
+    message = tokens.Message(text='Test commit')
     assert message.eval() == 'Test commit'
 
-    message = tokens.Message(message='Test commit',
+    message = tokens.Message(text='Test commit',
                              message_type=tokens.TYPES.bugfix)
     assert message.eval() == '[Bugfix] Test commit'
 
-    # FIXME: fix regexp
     message = '* Test commit'
     message = tokens.Message.parse(message)
     assert isinstance(message, tokens.Message)
     assert message._type == tokens.TYPES.message
-    assert message._message == 'Test commit'
+    assert message._text == 'Test commit'
 
     message = '* [Bugfix] Test commit'
     message = tokens.Message.parse(message)
     assert isinstance(message, tokens.Message)
     assert message._type == tokens.TYPES.bugfix
-    assert message._message == 'Test commit'
+    assert message._text == 'Test commit'

@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 import abc
-
 import re
 
 from md_changelog import tokens
-
 from md_changelog.exceptions import ChangelogError
 from md_changelog.tokens import Version, Date, Message
 
@@ -44,13 +42,17 @@ class LogEntry(Evaluable):
                 return True
         return False
 
+    @property
+    def version(self):
+        return self._version
+
     def eval(self):
         header = self.eval_header()
-        tokens = (header,
-                  '-' * len(header),
-                  '\n'.join(['* {}'.format(entry.eval())
-                             for entry in self._messages]))
-        return '\n'.join(tokens)
+        text_tokens = (header,
+                       '-' * len(header),
+                       '\n'.join(['* {}'.format(entry.eval())
+                                  for entry in self._messages]))
+        return '\n'.join(text_tokens)
 
     def add_message(self, message):
         if not isinstance(message, tokens.Message):
@@ -95,50 +97,56 @@ class LogEntry(Evaluable):
         return bool(Message.parse(line))
 
     def __repr__(self):
-        return "%s(declared=%s, messages=%d)" % (self.__class__.__name__,
-                                                 self.declared,
-                                                 len(self._messages))
+        return "%s(version=%s, date=%s, declared=%s, messages=%d)" % \
+               (self.__class__.__name__, str(self.version), str(self._date),
+                self.declared, len(self._messages))
 
 
 class Changelog(object):
     """Changelog representation"""
 
     IGNORE_LINES_RE = re.compile(r'([-=]{3,})')  # ----, ===
+    INIT_VERSION = '0.1.0'
 
-    def __init__(self, path=None, entries=None):
+    def __init__(self, path, entries=None):
         self.path = path
         self.entries = entries or []
 
     @property
     def last_entry(self):
-        if self.entries:
-            return self.entries[-1]
-        return None
+        if not self.entries:
+            return None
+        return self.entries[-1]
+
+    @property
+    def versions(self):
+        if not self.entries:
+            return None
+        return [entry.version for entry in self.entries]
 
     @classmethod
     def parse(cls, path):
         """Parse changelog
 
         :param path: str
-        :param only_last: bool
-        :return: Changelog
+        :return: Changelog instance
         """
-        # TODO: write test for it
         with open(path) as fd:
             content = fd.read()
-        entries = cls.parse_entries(text=content, only_last=False)
-        instance = Changelog(path=path, entries=entries)
+        entries = cls.parse_entries(text=content)
+        instance = Changelog(path=path, entries=entries[::-1])
         return instance
 
     @classmethod
-    def parse_entries(cls, text: str, only_last=True):
+    def parse_entries(cls, text: str):
         """Parse text into log entries
 
         :param text: str: raw changelog text
         :param only_last: bool: parse only last entry
         """
         entries = []
-        log_entry = LogEntry()
+        stack = []
+        log_entry = None
         for line in text.splitlines():
             # Skip comments or empty lines
             if line.startswith('#') or not line:
@@ -147,34 +155,57 @@ class Changelog(object):
                 continue
 
             if LogEntry.is_header(line):
+                log_entry = LogEntry()
+                stack.append(log_entry)
                 if not log_entry.declared:
                     # New log entry
                     log_entry.add_version(Version.parse(line))
                     log_entry.add_date(Date.parse(line))
                 else:
                     entries.append(log_entry)
-                    if only_last:
-                        break
-                    # flush changes
+                    stack.pop()
+
                     log_entry = LogEntry()
-            elif log_entry.declared and LogEntry.is_message(line):
+                    stack.append(log_entry)
+            elif log_entry and log_entry.declared and LogEntry.is_message(line):
                 # parse messages only after log header is declared
                 log_entry.add_message(Message.parse(line))
             else:
                 continue
+        if stack:
+            entries.extend(stack)
         return entries
 
     def new_entry(self):
+        """Create and add new unreleased log entry
+
+        :return: LogEntry instance
+        """
         log_entry = LogEntry()
+        if len(self.entries) == 0:
+            last_version = self.INIT_VERSION
+        else:
+            last_version = str(self.last_entry.version)
+
+        v = Version(version_str='%s+1' % last_version)
+        log_entry.add_version(version=v)
+        log_entry.add_date(date=Date(dt=''))  # set Date as unreleased
         self.entries.append(log_entry)
         return log_entry
 
-    def sync(self):
-        """Save and sync changes
+    def add_entry(self, entry):
+        if not isinstance(entry, LogEntry):
+            raise ValueError('Wrong entry type %r, must be %s'
+                             % (entry, LogEntry))
+        self.entries.append(entry)
 
+    def save(self):
+        """Save and sync changes
         """
-        # TODO: generate string and save
-        pass
+        with open(self.path, 'w') as fd:
+            fd.write('\n\n'.join(
+                [entry.eval() for entry in reversed(self.entries)])
+            )
 
     def __repr__(self):
         return "%s(entries=%d)" % (self.__class__.__name__, len(self.entries))

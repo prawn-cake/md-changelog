@@ -24,19 +24,8 @@ class Token(Evaluable):
     def parse(self, raw_text):
         pass
 
-
-class TokenGroup(Evaluable):
-    """Group of tokens"""
-
-    TOKENS = ()
-    SEPARATOR = ' '
-
-    def eval(self):
-        eval_parts = []
-        for t in self.TOKENS:
-            eval_parts.append(t.eval())
-
-        return str(self.SEPARATOR).join(eval_parts)
+    def __str__(self):
+        return str(self.eval())
 
 
 class Version(Token):
@@ -48,8 +37,9 @@ class Version(Token):
     def __init__(self, version_str, matcher=None):
         self.version_str = version_str
         self._version_dict = {}
-        if matcher:
-            self._version_dict = matcher.groupdict()
+        if not matcher:
+            matcher = self.VERSION_RE.search(version_str)
+        self._version_dict = matcher.groupdict()
 
     @classmethod
     def parse(cls, raw_text):
@@ -73,11 +63,16 @@ class Version(Token):
 class Date(Token):
     """Date token"""
 
-    DATE_RE = re.compile(r'(\d{4})\-(\d{2})\-(\d{2})')
+    UNRELEASED = 'UNRELEASED'
+    DATE_RE = re.compile(r'((\d{4})\-(\d{2})\-(\d{2})|%s)' % UNRELEASED)
     DATE_FMT = '%Y-%m-%d'
 
-    def __init__(self, dt):
-        if isinstance(dt, str):
+    def __init__(self, dt=None):
+        if dt is None:
+            self.dt = datetime.now()
+        elif dt in ('', self.UNRELEASED):  # UNRELEASED can come from parse
+            self.dt = None
+        elif isinstance(dt, str):
             self.dt = datetime.strptime(dt, self.DATE_FMT)
         elif isinstance(dt, datetime):
             self.dt = dt
@@ -92,7 +87,12 @@ class Date(Token):
         return cls(dt=matcher.group())
 
     def eval(self):
-        return self.dt.strftime(self.DATE_FMT)
+        if self.dt:
+            return self.dt.strftime(self.DATE_FMT)
+        return self.UNRELEASED
+
+    def __repr__(self):
+        return ''
 
 
 # Declare message type namedtuple
@@ -109,22 +109,21 @@ TYPES = message_t(message='',
 class Message(Token):
     """Changelog entry message"""
 
-    MD_TEMPLATE = '{type} {message}'
-    # ENTRY_RE = re.compile(r'(?P<type>\[\w+\])? ?(?P<message>^(?!(?:\-{3,}|={3,})).*$)')
+    MD_TEMPLATE = '{type} {text}'
     MESSAGE_RE = re.compile(r'^\* (?P<type>\[\w+\])? ?(?P<message>.*$)')
 
-    def __init__(self, message, message_type=None):
+    def __init__(self, text, message_type=None):
         if not message_type:
             self._type = TYPES.message
         else:
             self._type = message_type
-        self._message = message
+        self._text = text
 
     def eval(self):
         if self._type == TYPES.message:
-            return self._message
+            return self._text
         return self.MD_TEMPLATE.format(type=self.format_type(self._type),
-                                       message=self._message)
+                                       text=self._text)
 
     @staticmethod
     def format_type(val):
@@ -153,10 +152,10 @@ class Message(Token):
         except AttributeError:
             raise WrongMessageTypeError(
                 'Wrong message type: %s' % values_dict['type'])
-        instance = cls(message=str(values_dict['message']),
+        instance = cls(text=str(values_dict['message']),
                        message_type=message_type)
         return instance
 
     def __repr__(self):
-        return '%s(type=%s, message=%s)' % (
-            self.__class__.__name__, self._type, self._message)
+        return '%s(type=%s, text=%s)' % (
+            self.__class__.__name__, self._type, self._text)

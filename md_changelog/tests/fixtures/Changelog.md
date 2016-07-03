@@ -23,7 +23,7 @@ Changelog
 * [Feature] User-function calls: SELECT * FROM my_custom_function(%s, %s, %s)
 
 
-0.1.0 [2016-03-11]
+0.1.0 (2016-03-11)
 --------------------
 * Initial release
 * [Feature] very basic SelectQuery and InsertQuery functionality
