@@ -74,6 +74,17 @@ def test_add_message(parser):
 
 def test_release(parser):
     with mock.patch('subprocess.call') as call_mock:
+        # Without version specification
+        with get_test_config() as cfg_path:
+            args = parser.parse_args(
+                ['-c', cfg_path, 'release'])
+            args.func(args)
+            assert call_mock.called is True
+            args = call_mock.call_args_list[0][0][0]
+            assert main.default_editor() in args
+            assert main.CHANGELOG_NAME in args[1]
+
+        # With version '-v'
         with get_test_config() as cfg_path:
             args = parser.parse_args(
                 ['-c', cfg_path, 'release', '-v', '1.0.0'])
@@ -82,3 +93,10 @@ def test_release(parser):
             args = call_mock.call_args_list[0][0][0]
             assert main.default_editor() in args
             assert main.CHANGELOG_NAME in args[1]
+
+
+def test_show_current(parser):
+    # Just expect no errors
+    with get_test_config() as cfg_path:
+        args = parser.parse_args(['-c', cfg_path, 'current'])
+        args.func(args)

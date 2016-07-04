@@ -94,6 +94,9 @@ class Date(Token):
         else:
             raise ValueError('Wrong datetime value %r for Date token' % dt)
 
+    def is_set(self):
+        return isinstance(self.dt, datetime)
+
     @classmethod
     def parse(cls, raw_text):
         matcher = cls.DATE_RE.search(raw_text)

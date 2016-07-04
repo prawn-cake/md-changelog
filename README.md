@@ -29,8 +29,6 @@ Handy command-line tool for managing changelog for your open source projects.
     
 ### Add entry for the last version
 
-Interface:
-
     md-changelog <entry type> <msg>
     
     # Examples

@@ -62,14 +62,19 @@ class LogEntry(Evaluable):
         self._messages.append(message)
 
     def set_version(self, version):
-        if self._version is None or not self.version.released:
+        cond = (self._version is None,
+                self.version and not self.version.released)
+        if any(cond):
             self._version = version
         else:
             raise ChangelogError(
                 "Can't add version because it's already exists")
 
     def set_date(self, date):
-        if self._date is None or not self.version.released:
+        cond = (self._date is None,
+                self._date and not self._date.is_set(),
+                not self.version.released)
+        if any(cond):
             self._date = date
         else:
             raise ChangelogError(

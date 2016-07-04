@@ -2,6 +2,7 @@
 
 import argparse
 import configparser
+import copy
 import functools
 import logging
 import os
@@ -135,6 +136,8 @@ def release(args):
         logger.info("No UNRELEASED entries. Run 'md-changelog append'")
         sys.exit(99)
 
+    backup = copy.deepcopy(changelog)
+
     if args.version:
         # Set up specific version
         v = tokens.Version(args.version)
@@ -150,24 +153,29 @@ def release(args):
     last_entry.set_date(tokens.Date())
     changelog.save()
     subprocess.call([default_editor(), changelog.path])
+    confirm = input('Confirm changes? [Y/n]')
+
+    # if confirm == 'n':
+    #     backup.save()
+    #     logger.info('Undo changes')
+    #     sys.exit(0)
 
     changelog.reload()
     if not changelog.last_entry.version.released:
-        logger.info(
+        logger.warning(
             "WARNING: version still contains dev suffix: %s. "
             "Run 'md-changelog edit' to fix it",
             changelog.last_entry.version)
-        sys.exit(99)
 
     if len(changelog.entries) > 1:
         v_cur = changelog.last_entry.version
         v_prev = changelog.entries[-2].version
         if v_cur <= v_prev:
-            logger.info("WARNING: wrong release version, less or equal "
-                        "the previous one: %s (current) <= %s (previous). "
-                        "Run 'md-changelog edit' to fix it",
-                        v_cur, v_prev)
-            sys.exit(99)
+            logger.warning(
+                "WARNING: wrong release version, less or equal "
+                "the previous one: %s (current) <= %s (previous). "
+                "Run 'md-changelog edit' to fix it",
+                v_cur, v_prev)
 
 
 def append_entry(args):
