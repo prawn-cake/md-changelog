@@ -7,7 +7,7 @@ setup(
     url='',
     license='MIT',
     author='Maksim Ekimovskii',
-    author_email='',
+    author_email='ekimovsky.maksim@gmail.com',
     description='Changelog command-line tool manager',
     entry_points={
         'console_scripts': [
