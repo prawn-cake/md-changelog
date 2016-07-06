@@ -136,7 +136,7 @@ def release(args):
         logger.info("No UNRELEASED entries. Run 'md-changelog append'")
         sys.exit(99)
 
-    backup = copy.deepcopy(changelog)
+    # backup = copy.deepcopy(changelog)
 
     if args.version:
         # Set up specific version
@@ -149,11 +149,10 @@ def release(args):
         else:
             last_entry.set_version(v)
 
-    # FIXME: raising ChangelogError when calling 'md-changelog release -v 1.0.0'
     last_entry.set_date(tokens.Date())
     changelog.save()
     subprocess.call([default_editor(), changelog.path])
-    confirm = input('Confirm changes? [Y/n]')
+    # confirm = input('Confirm changes? [Y/n]')
 
     # if confirm == 'n':
     #     backup.save()
