@@ -1,5 +1,6 @@
 md-changelog
-------------
+============
+[![Build Status](https://travis-ci.org/prawn-cake/md-changelog.svg?branch=master)](https://travis-ci.org/prawn-cake/md-changelog)
 
 Handy command-line tool for managing changelog for your open source projects.
 
