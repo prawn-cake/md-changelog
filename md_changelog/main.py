@@ -211,15 +211,24 @@ def add_message(args):
     """
     changelog = get_changelog(args.config)
     m_type = getattr(tokens.TYPES, args.message_type)
-    msg = tokens.Message(text=args.message, message_type=m_type)
+    messages = []
+    if args.split_by:
+        messages = [tokens.Message(text=msg.strip(), message_type=m_type)
+                    for msg in args.message.split(args.split_by)]
+    else:
+        messages.append(tokens.Message(text=args.message, message_type=m_type))
+
     if not changelog.last_entry or changelog.last_entry.version.released:
         new_entry = changelog.new_entry()
-        new_entry.add_message(msg)
+        for msg in messages:
+            new_entry.add_message(msg)
     else:
-        changelog.last_entry.add_message(msg)
+        for msg in messages:
+            changelog.last_entry.add_message(msg)
     changelog.save()
 
-    logger.info('Added new %s entry to the %s (%s)',
+    logger.info('Added new %d %s entry to the %s (%s)',
+                len(messages),
                 args.message_type,
                 op.relpath(changelog.path),
                 str(changelog.last_entry.version))
@@ -262,6 +271,9 @@ def create_parser():
         msg_p = subparsers.add_parser(
             m_type, help='Add new %s entry to the current release' % m_type)
         msg_p.add_argument('message', help='Enter text message here')
+        msg_p.add_argument('--split-by', type=str,
+                           help='Split message into several and add it as '
+                                'multiple entries')
         msg_p.set_defaults(func=add_message, message_type=m_type)
 
     # Open in an editor command

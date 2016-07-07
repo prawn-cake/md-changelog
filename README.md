@@ -28,9 +28,9 @@ Handy command-line tool for managing changelog for your open source projects.
     md-changelog edit
     
     
-### Add entry for the last version
+### Add message entry
 
-    md-changelog <entry type> <msg>
+    md-changelog <entry type> <msg> [--split-by='<delimiter>']
     
     # Examples
     md-changelog message "My message"
@@ -38,7 +38,11 @@ Handy command-line tool for managing changelog for your open source projects.
     md-changelog bugfix "Fixed main loop"
     md-changelog feature "Implemented new feature"
     
-The following changelog will be generated
+    # Add multiple entries the same type at once
+    md-changelog improvement --split-by "Code cleanup; New command-line --split-by key; Improved feature X"
+    
+    
+Changelog may look like
 
     Changelog
     =========
