@@ -95,8 +95,8 @@ def test_release(parser):
             assert main.CHANGELOG_NAME in args[1]
 
 
-def test_show_current(parser):
+def test_show_last(parser):
     # Just expect no errors
     with get_test_config() as cfg_path:
-        args = parser.parse_args(['-c', cfg_path, 'current'])
+        args = parser.parse_args(['-c', cfg_path, 'last'])
         args.func(args)

@@ -56,9 +56,9 @@ The following changelog will be generated
     md-changelog auto-message "${some_var_from_git_commit_post_hook}"
     
 
-### Get current (last) changelog entry
+### Show last changelog entry
 
-    md-changelog current
+    md-changelog last
     
 
 ### New release
@@ -70,4 +70,5 @@ The following changelog will be generated
 ### Append new unreleased entry
 
     md-changelog append
+    md-changelog append --no-edit  # just add a new entry without calling editor 
     
