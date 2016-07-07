@@ -23,8 +23,8 @@ exclude_lines =
 include =
     md-changelog/*
 omit =
-    #<PACKAGE_NAME>/tests.py
     md-changelog/tests/*
+    md-changelog/assets/*
 
 ignore_errors = True
 

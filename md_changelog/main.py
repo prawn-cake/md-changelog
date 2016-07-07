@@ -190,7 +190,9 @@ def append_entry(args):
         sys.exit(99)
     changelog.new_entry()
     changelog.save()
-    subprocess.call([default_editor(), changelog.path])
+    if not args.no_edit:
+        subprocess.call([default_editor(), changelog.path])
+    logger.info("Added new '%s' entry", changelog.last_entry.header)
 
 
 def edit(args):
@@ -209,15 +211,24 @@ def add_message(args):
     """
     changelog = get_changelog(args.config)
     m_type = getattr(tokens.TYPES, args.message_type)
-    msg = tokens.Message(text=args.message, message_type=m_type)
-    if not changelog.last_entry:
-        new_entry = changelog.new_entry()
-        new_entry.add_message(msg)
+    messages = []
+    if args.split_by:
+        messages = [tokens.Message(text=msg.strip(), message_type=m_type)
+                    for msg in args.message.split(args.split_by)]
     else:
-        changelog.last_entry.add_message(msg)
+        messages.append(tokens.Message(text=args.message, message_type=m_type))
+
+    if not changelog.last_entry or changelog.last_entry.version.released:
+        new_entry = changelog.new_entry()
+        for msg in messages:
+            new_entry.add_message(msg)
+    else:
+        for msg in messages:
+            changelog.last_entry.add_message(msg)
     changelog.save()
 
-    logger.info('Added new %s entry to the %s (%s)',
+    logger.info('Added new %d %s entry to the %s (%s)',
+                len(messages),
                 args.message_type,
                 op.relpath(changelog.path),
                 str(changelog.last_entry.version))
@@ -245,12 +256,14 @@ def create_parser():
     init_p.set_defaults(func=init)
 
     release_p = subparsers.add_parser(
-        'release', help='Add new release entry')
+        'release', help='Release current version')
     release_p.add_argument('-v', '--version', help='New release version')
     release_p.set_defaults(func=release)
 
     append_p = subparsers.add_parser(
         'append', help='Append a new changelog entry')
+    append_p.add_argument('--no-edit', help="Don't call text editor after run",
+                          action='store_true')
     append_p.set_defaults(func=append_entry)
 
     # Message parsers
@@ -258,15 +271,17 @@ def create_parser():
         msg_p = subparsers.add_parser(
             m_type, help='Add new %s entry to the current release' % m_type)
         msg_p.add_argument('message', help='Enter text message here')
+        msg_p.add_argument('--split-by', type=str,
+                           help='Split message into several and add it as '
+                                'multiple entries')
         msg_p.set_defaults(func=add_message, message_type=m_type)
 
     # Open in an editor command
     edit_p = subparsers.add_parser('edit', help='Open changelog in the editor')
     edit_p.set_defaults(func=edit)
 
-    current_p = subparsers.add_parser('current',
-                                      help='Show current release log')
-    current_p.set_defaults(func=show_current)
+    last_p = subparsers.add_parser('last', help='Show last log entry')
+    last_p.set_defaults(func=show_current)
 
     return parser
 

@@ -1,5 +1,6 @@
 md-changelog
-------------
+============
+[![Build Status](https://travis-ci.org/prawn-cake/md-changelog.svg?branch=master)](https://travis-ci.org/prawn-cake/md-changelog)
 
 Handy command-line tool for managing changelog for your open source projects.
 
@@ -27,9 +28,9 @@ Handy command-line tool for managing changelog for your open source projects.
     md-changelog edit
     
     
-### Add entry for the last version
+### Add message entry
 
-    md-changelog <entry type> <msg>
+    md-changelog <entry type> <msg> [--split-by='<delimiter>']
     
     # Examples
     md-changelog message "My message"
@@ -37,7 +38,11 @@ Handy command-line tool for managing changelog for your open source projects.
     md-changelog bugfix "Fixed main loop"
     md-changelog feature "Implemented new feature"
     
-The following changelog will be generated
+    # Add multiple entries the same type at once
+    md-changelog improvement --split-by "Code cleanup; New command-line --split-by key; Improved feature X"
+    
+    
+Changelog may look like
 
     Changelog
     =========
@@ -55,9 +60,9 @@ The following changelog will be generated
     md-changelog auto-message "${some_var_from_git_commit_post_hook}"
     
 
-### Get current (last) changelog entry
+### Show last changelog entry
 
-    md-changelog current
+    md-changelog last
     
 
 ### New release
@@ -69,4 +74,5 @@ The following changelog will be generated
 ### Append new unreleased entry
 
     md-changelog append
+    md-changelog append --no-edit  # just add a new entry without calling editor 
     

@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='md-changelog',
-    version='0.1.0',
+    version='0.1.1',
     packages=['md_changelog'],
     url='',
     license='MIT',

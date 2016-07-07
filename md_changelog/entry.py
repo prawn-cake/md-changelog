@@ -48,7 +48,7 @@ class LogEntry(Evaluable):
         return self._version
 
     def eval(self):
-        header = self._eval_header()
+        header = self.header
         text_tokens = (header,
                        '-' * len(header),
                        '\n'.join(['* {}'.format(entry.eval())
@@ -80,7 +80,8 @@ class LogEntry(Evaluable):
             raise ChangelogError(
                 "Can't add date because it's already exists")
 
-    def _eval_header(self):
+    @property
+    def header(self):
         return '{version} ({date})'.format(version=self._version.eval(),
                                            date=self._date.eval())
 
