@@ -4,3 +4,4 @@
 .vagrant
 .coverage
 .tox
+release.txt

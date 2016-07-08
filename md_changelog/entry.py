@@ -108,6 +108,11 @@ class LogEntry(Evaluable):
                (self.__class__.__name__, str(self.version), str(self._date),
                 self.declared, len(self._messages))
 
+    def __eq__(self, other):
+        return all([self.version == other.version,
+                    self._date == other._date,
+                    self._messages == other._messages])
+
 
 class Changelog(object):
     """Changelog representation"""
@@ -119,6 +124,7 @@ class Changelog(object):
         self.header = 'Changelog'
         self.path = path
         self.entries = entries or []
+        self._backup = None
 
     @property
     def last_entry(self):
@@ -146,11 +152,11 @@ class Changelog(object):
         return instance
 
     @classmethod
-    def parse_entries(cls, text: str):
+    def parse_entries(cls, text):
         """Parse text into log entries
 
         :param text: str: raw changelog text
-        :param only_last: bool: parse only last entry
+        :rtype: list
         """
         entries = []
         stack = []
@@ -189,6 +195,7 @@ class Changelog(object):
 
         :return: LogEntry instance
         """
+        self._make_backup()
         log_entry = LogEntry()
         if len(self.entries) == 0:
             last_version = self.INIT_VERSION
@@ -205,6 +212,7 @@ class Changelog(object):
         if not isinstance(entry, LogEntry):
             raise ValueError('Wrong entry type %r, must be %s'
                              % (entry, LogEntry))
+        self._make_backup()
         self.entries.append(entry)
 
     def save(self):
@@ -223,6 +231,17 @@ class Changelog(object):
         """
         reloaded = self.parse(self.path)
         self.__dict__ = copy.deepcopy(reloaded.__dict__)
+
+    def undo(self):
+        if self._backup:
+            self.__dict__ = copy.deepcopy(self._backup.__dict__)
+            return True
+        return False
+
+    def _make_backup(self):
+        """Make deep copy of itself
+        """
+        self._backup = copy.deepcopy(self)
 
     def __repr__(self):
         return "%s(entries=%d)" % (self.__class__.__name__, len(self.entries))

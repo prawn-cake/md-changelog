@@ -9,20 +9,18 @@ from md_changelog.exceptions import WrongMessageTypeError
 
 
 class Evaluable(object):
-    @abc.abstractmethod
     def eval(self):
         """This method should generally evaluate the value of it's holder.
         In most cases it should return some markdown string
         """
-        pass
+        raise NotImplementedError()
 
 
 class Token(Evaluable):
     """Token interface"""
 
-    @abc.abstractclassmethod
     def parse(self, raw_text):
-        pass
+        raise NotImplementedError()
 
     def __str__(self):
         return str(self.eval())
@@ -74,6 +72,9 @@ class Version(Token):
     def __le__(self, other):
         return self._version_tuple <= other._version_tuple
 
+    def __eq__(self, other):
+        return self._version_tuple == other._version_tuple
+
 
 class Date(Token):
     """Date token"""
@@ -110,7 +111,22 @@ class Date(Token):
         return self.UNRELEASED
 
     def __repr__(self):
-        return ''
+        return '%s(%s)' % (self.__class__.__name__, self.dt)
+
+    def __eq__(self, other):
+        return self.dt == other.dt
+
+    def __gt__(self, other):
+        return self.dt > other.dt
+
+    def __lt__(self, other):
+        return self.dt < other.dt
+
+    def __ge__(self, other):
+        return self.dt >= other.dt
+
+    def __le__(self, other):
+        return self.dt <= other.dt
 
 
 # Declare message type namedtuple
