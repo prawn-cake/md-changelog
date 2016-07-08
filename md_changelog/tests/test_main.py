@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
-import tempfile
-import pytest
 import os.path as op
-from unittest import mock
+import tempfile
+
+import mock
+import pytest
+
+# from six.moves import tempfile
 from contextlib import contextmanager
+
+import shutil
+
 from md_changelog import main
 from md_changelog.entry import Changelog
 from md_changelog.exceptions import ConfigNotFoundError
@@ -15,9 +21,19 @@ def parser():
 
 
 @contextmanager
+def TemporaryDirectory():
+    """Py2/3 tempfile.TemporaryDirectory replacement without external backports
+
+    """
+    tmp_dir = tempfile.mkdtemp()
+    yield tmp_dir
+    shutil.rmtree(tmp_dir)
+
+
+@contextmanager
 def get_test_config():
     parser = main.create_parser()
-    with tempfile.TemporaryDirectory() as tmp_dir:
+    with TemporaryDirectory() as tmp_dir:
         args = parser.parse_args(['init', '--path', tmp_dir])
         args.func(args)
         cfg_path = op.join(tmp_dir, main.CONFIG_NAME)
@@ -31,7 +47,7 @@ def test_get_config():
 
 
 def test_init(parser):
-    with tempfile.TemporaryDirectory() as tmp_dir:
+    with TemporaryDirectory() as tmp_dir:
         args = parser.parse_args(['init', '--path', tmp_dir])
         args.func(args)
 

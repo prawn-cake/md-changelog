@@ -2,7 +2,6 @@
 
 import argparse
 import configparser
-import copy
 import functools
 import logging
 import os
@@ -136,8 +135,6 @@ def release(args):
         logger.info("No UNRELEASED entries. Run 'md-changelog append'")
         sys.exit(99)
 
-    # backup = copy.deepcopy(changelog)
-
     if args.version:
         # Set up specific version
         v = tokens.Version(args.version)
@@ -155,7 +152,7 @@ def release(args):
     # confirm = input('Confirm changes? [Y/n]')
 
     # if confirm == 'n':
-    #     backup.save()
+    #     changelog.undo()
     #     logger.info('Undo changes')
     #     sys.exit(0)
 

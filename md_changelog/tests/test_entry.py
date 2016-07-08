@@ -60,3 +60,27 @@ def test_new_changelog_save():
         assert len(changelog.entries) == len(changelog_2.entries)
         for e1, e2 in zip(changelog.entries, changelog_2.entries):
             assert e1.eval() == e2.eval()
+
+
+def test_changelog_backup():
+    with tempfile.NamedTemporaryFile() as tmp_file:
+        changelog = Changelog(path=tmp_file.name)
+        assert len(changelog.entries) == 0
+
+        # Test undo new entry
+        changelog.new_entry()
+        assert len(changelog.entries) == 1
+
+        assert changelog.undo() is True
+        assert len(changelog.entries) == 0
+
+        # Add new entry + one entry manually, then undo the last one
+        new_entry = changelog.new_entry()
+        entry = LogEntry(version=tokens.Version('0.1.0'), date=tokens.Date())
+        entry.add_message(Message(text='Test message'))
+        changelog.add_entry(entry)
+        assert len(changelog.entries) == 2
+
+        assert changelog.undo() is True
+        assert len(changelog.entries) == 1
+        assert changelog.entries[0] == new_entry
