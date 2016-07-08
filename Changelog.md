@@ -3,7 +3,8 @@ Changelog
 
 0.1.1+1 (UNRELEASED)
 --------------------
-
+* [Improvement] py2/3 compatibility
+* [Improvement] implemented changelog.undo()
 
 0.1.1 (2016-07-07)
 ------------------

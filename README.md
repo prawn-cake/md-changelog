@@ -67,7 +67,12 @@ Changelog may look like
 
 ### New release
 
+Release currently unreleased version
+    
+    # Open in editor to update version manually
     md-changelog release
+    
+    # Set the version explicitly
     md-changelog release -v 1.0.0
 
 
