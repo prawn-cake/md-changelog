@@ -10,7 +10,7 @@ else:
 
 setup(
     name='md-changelog',
-    version='0.1.1',
+    version='0.1.2',
     packages=['md_changelog'],
     url='',
     license='MIT',
