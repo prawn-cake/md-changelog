@@ -66,7 +66,8 @@ def test_add_message(parser):
         args = parser.parse_args(['-c', cfg_path, 'feature', 'test feature'])
         args.func(args)
 
-        args = parser.parse_args(['-c', cfg_path, 'bugfix', 'test bugfix'])
+        # check unicode message
+        args = parser.parse_args(['-c', cfg_path, 'bugfix', 'багфикс'])
         args.func(args)
 
         changelog = Changelog.parse(path=config['md-changelog']['changelog'])
