@@ -42,7 +42,7 @@ Handy command-line tool for managing changelog for your open source projects.
     md-changelog feature "Implemented new feature"
     
     # Add multiple entries the same type at once
-    md-changelog improvement --split-by "Code cleanup; New command-line --split-by key; Improved feature X"
+    md-changelog improvement --split-by=';' "Code cleanup; New command-line --split-by key; Improved feature X"
     
     
 Changelog may look like
@@ -77,7 +77,9 @@ Release currently unreleased version
     
     # Set the version explicitly
     md-changelog release -v 1.0.0
-
+    
+    # Without confirmation dialog
+    md-changelog release -v 1.0.0 --force-yes
 
 ### Append new unreleased entry
 
