@@ -1,5 +1,3 @@
 mock
-six
-configparser; python_version < '3.2'
 pytest
 coverage

@@ -195,7 +195,7 @@ class Changelog(object):
 
         :return: LogEntry instance
         """
-        self._make_backup()
+        self.make_backup()
         log_entry = LogEntry()
         if len(self.entries) == 0:
             last_version = self.INIT_VERSION
@@ -212,7 +212,7 @@ class Changelog(object):
         if not isinstance(entry, LogEntry):
             raise ValueError('Wrong entry type %r, must be %s'
                              % (entry, LogEntry))
-        self._make_backup()
+        self.make_backup()
         self.entries.append(entry)
 
     def save(self):
@@ -238,7 +238,7 @@ class Changelog(object):
             return True
         return False
 
-    def _make_backup(self):
+    def make_backup(self):
         """Make deep copy of itself
         """
         self._backup = copy.deepcopy(self)
