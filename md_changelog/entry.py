@@ -195,7 +195,7 @@ class Changelog(object):
 
         :return: LogEntry instance
         """
-        self._make_backup()
+        self.make_backup()
         log_entry = LogEntry()
         if len(self.entries) == 0:
             last_version = self.INIT_VERSION
@@ -212,18 +212,14 @@ class Changelog(object):
         if not isinstance(entry, LogEntry):
             raise ValueError('Wrong entry type %r, must be %s'
                              % (entry, LogEntry))
-        self._make_backup()
+        self.make_backup()
         self.entries.append(entry)
 
     def save(self):
         """Save and sync changes
         """
         with open(self.path, 'w') as fd:
-            fd.write('Changelog\n=========\n\n')
-            fd.write('\n\n'.join(
-                [entry.eval() for entry in reversed(self.entries)])
-            )
-            fd.write('\n\n')
+            fd.write(self.eval())
 
     def reload(self):
         """Reload changelog within the same instance
@@ -238,10 +234,20 @@ class Changelog(object):
             return True
         return False
 
-    def _make_backup(self):
+    def make_backup(self):
         """Make deep copy of itself
         """
         self._backup = copy.deepcopy(self)
 
     def __repr__(self):
         return "%s(entries=%d)" % (self.__class__.__name__, len(self.entries))
+
+    def eval(self):
+        lines = ['Changelog\n=========\n\n']
+        lines.append(
+            '\n\n'.join([entry.eval() for entry in reversed(self.entries)]))
+        lines.append('\n\n')
+        return ''.join(lines)
+
+    def __eq__(self, other):
+        return self.eval() == other.eval()

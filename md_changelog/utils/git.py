@@ -16,4 +16,4 @@ class GitBackend(VcsBackend):
     @classmethod
     def call_cmd(cls, *args):
         output = subprocess.check_output(args)
-        return str(output.strip())
+        return str(output).strip()

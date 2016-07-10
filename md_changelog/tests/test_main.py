@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*-
 import os.path as op
 import tempfile
+from contextlib import contextmanager
 
 import mock
 import pytest
-
-# from six.moves import tempfile
-from contextlib import contextmanager
-
-import shutil
 
 from md_changelog import main
 from md_changelog.entry import Changelog
@@ -21,19 +17,9 @@ def parser():
 
 
 @contextmanager
-def TemporaryDirectory():
-    """Py2/3 tempfile.TemporaryDirectory replacement without external backports
-
-    """
-    tmp_dir = tempfile.mkdtemp()
-    yield tmp_dir
-    shutil.rmtree(tmp_dir)
-
-
-@contextmanager
 def get_test_config():
     parser = main.create_parser()
-    with TemporaryDirectory() as tmp_dir:
+    with tempfile.TemporaryDirectory() as tmp_dir:
         args = parser.parse_args(['init', '--path', tmp_dir])
         args.func(args)
         cfg_path = op.join(tmp_dir, main.CONFIG_NAME)
@@ -47,7 +33,7 @@ def test_get_config():
 
 
 def test_init(parser):
-    with TemporaryDirectory() as tmp_dir:
+    with tempfile.TemporaryDirectory() as tmp_dir:
         args = parser.parse_args(['init', '--path', tmp_dir])
         args.func(args)
 
@@ -80,7 +66,8 @@ def test_add_message(parser):
         args = parser.parse_args(['-c', cfg_path, 'feature', 'test feature'])
         args.func(args)
 
-        args = parser.parse_args(['-c', cfg_path, 'bugfix', 'test bugfix'])
+        # check unicode message
+        args = parser.parse_args(['-c', cfg_path, 'bugfix', 'багфикс'])
         args.func(args)
 
         changelog = Changelog.parse(path=config['md-changelog']['changelog'])
@@ -94,17 +81,23 @@ def test_release(parser):
         with get_test_config() as cfg_path:
             args = parser.parse_args(
                 ['-c', cfg_path, 'release'])
-            args.func(args)
-            assert call_mock.called is True
-            args = call_mock.call_args_list[0][0][0]
-            assert main.default_editor() in args
-            assert main.CHANGELOG_NAME in args[1]
+            with mock.patch('md_changelog.main.get_input', return_value='Y') \
+                    as input_mock:
+                args.func(args)
+                assert input_mock.called
+                assert call_mock.called is True
+                args = call_mock.call_args_list[0][0][0]
+                assert main.default_editor() in args
+                assert main.CHANGELOG_NAME in args[1]
 
         # With version '-v'
         with get_test_config() as cfg_path:
             args = parser.parse_args(
                 ['-c', cfg_path, 'release', '-v', '1.0.0'])
-            args.func(args)
+            with mock.patch('md_changelog.main.get_input', return_value='Y') \
+                    as input_mock:
+                args.func(args)
+            assert input_mock.called
             assert call_mock.called is True
             args = call_mock.call_args_list[0][0][0]
             assert main.default_editor() in args

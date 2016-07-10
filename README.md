@@ -1,6 +1,8 @@
 md-changelog
 ============
 [![Build Status](https://travis-ci.org/prawn-cake/md-changelog.svg?branch=master)](https://travis-ci.org/prawn-cake/md-changelog)
+[![Coverage Status](https://coveralls.io/repos/github/prawn-cake/md-changelog/badge.svg?branch=master)](https://coveralls.io/github/prawn-cake/md-changelog?branch=master)
+![PythonVersions](https://img.shields.io/badge/python-3.4-blue.svg)
 
 Handy command-line tool for managing changelog for your open source projects.
 
@@ -13,13 +15,14 @@ Handy command-line tool for managing changelog for your open source projects.
 * Git tag integration
 
 
-## Config
+## Install
 
-    .md-changelog.rc
+    pip3 install md-changelog
 
-
+    
 ## Quickstart
-
+    
+    # it creates .md-changelog.rc and Changelog.md in the current folder 
     md-changelog init
 
    

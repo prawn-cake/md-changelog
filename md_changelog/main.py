@@ -119,6 +119,15 @@ def get_changelog(config_path):
     return Changelog.parse(path=changelog_path)
 
 
+def get_input(text):
+    """Get input wrapper. It basically needs for unittests
+
+    :param text: str
+    :return: input result
+    """
+    return input(text)
+
+
 def release(args):
     """Make a new release
 
@@ -146,15 +155,21 @@ def release(args):
         else:
             last_entry.set_version(v)
 
+    # Backup before release
+    changelog.make_backup()
+
     last_entry.set_date(tokens.Date())
     changelog.save()
-    subprocess.call([default_editor(), changelog.path])
-    # confirm = input('Confirm changes? [Y/n]')
 
-    # if confirm == 'n':
-    #     changelog.undo()
-    #     logger.info('Undo changes')
-    #     sys.exit(0)
+    # Skip this step if --force-yes is passed
+    if not args.force_yes:
+        subprocess.call([default_editor(), changelog.path])
+        confirm = get_input('Confirm changes? [Y/n]')
+        if confirm == 'n':
+            res = changelog.undo()
+            logger.info('Undo changes: %s', 'OK' if res else 'Fail')
+            changelog.save()
+            sys.exit(0)
 
     changelog.reload()
     if not changelog.last_entry.version.released:
@@ -231,10 +246,10 @@ def add_message(args):
                 str(changelog.last_entry.version))
 
 
-def show_current(args):
-    """'md-changelog current' command handler
+def show_last(args):
+    """Show the last changelog log entry
 
-    :param args:
+    :param args: command-line args
     """
     changelog = get_changelog(args.config)
     print('\n%s\n' % changelog.last_entry.eval())
@@ -255,6 +270,8 @@ def create_parser():
     release_p = subparsers.add_parser(
         'release', help='Release current version')
     release_p.add_argument('-v', '--version', help='New release version')
+    release_p.add_argument('-y', '--force-yes', action='store_true',
+                           help="Don't ask changes confirmation")
     release_p.set_defaults(func=release)
 
     append_p = subparsers.add_parser(
@@ -278,7 +295,7 @@ def create_parser():
     edit_p.set_defaults(func=edit)
 
     last_p = subparsers.add_parser('last', help='Show last log entry')
-    last_p.set_defaults(func=show_current)
+    last_p.set_defaults(func=show_last)
 
     return parser
 
