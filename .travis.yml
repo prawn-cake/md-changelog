@@ -5,8 +5,10 @@ env:
   - TOXENV=py34
 install:
   - pip install -r requirements-test.txt
-  - pip install tox coveralls
+  - pip install coveralls
 script:
-  - tox -r
-after_success:
-  coveralls
+  - py.test md_changelog/tests
+after_script:
+  coverage run -m py.test
+  coverage report
+  coveralls;
