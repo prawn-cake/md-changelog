@@ -10,6 +10,8 @@ setup(
     author='Maksim Ekimovskii',
     author_email='ekimovsky.maksim@gmail.com',
     description='Changelog command-line tool manager',
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'md-changelog = md_changelog.main:main'
