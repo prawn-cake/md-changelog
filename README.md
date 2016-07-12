@@ -22,8 +22,9 @@ Handy command-line tool for managing changelog for your open source projects.
     
 ## Quickstart
     
-    # it creates .md-changelog.rc and Changelog.md in the current folder 
-    md-changelog init
+    cd <project_path>
+
+    md-changelog init  # it creates .md-changelog.cfg and Changelog.md in the current folder
 
    
 ### Open with editor
@@ -70,7 +71,8 @@ Changelog may look like
 
 ### New release
 
-Release currently unreleased version
+Release currently unreleased version. 
+Release assumes to set a release date to the current and update the last version *(basically 0.1.0+1 -> 0.1.1 or 0.2.0, etc)* 
     
     # Open in editor to update version manually
     md-changelog release
