@@ -1,4 +1,5 @@
 [run]
+source=md_changelog
 branch = True
 
 [report]

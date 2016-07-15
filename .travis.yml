@@ -1,12 +1,18 @@
 language: python
+
 python:
   - 3.4
-env:
-  - TOXENV=py34
+
 install:
-  - pip install -r requirements-test.txt
-  - pip install tox coveralls
+  - pip install --quiet -r requirements-test.txt
+  - pip install --quiet coveralls
+
 script:
-  - tox -r
+  - py.test md_changelog/tests
+
+after_script:
+  coverage run -m py.test
+  coverage report
+
 after_success:
   coveralls
