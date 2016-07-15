@@ -10,7 +10,7 @@ install:
 script:
   - py.test md_changelog/tests
 
-after_successq:
+after_success:
   coverage run -m py.test
   coverage report
   coveralls
