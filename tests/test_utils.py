@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+import pytest
 
 
+@pytest.mark.skip('only for local tests')
 def test_git_backend():
     from md_changelog.utils.git import GitBackend
 

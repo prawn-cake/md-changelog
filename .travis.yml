@@ -11,6 +11,6 @@ script:
   - tox -r
 
 after_success:
-  coverage run -m py.test tests
-  coverage report
-  coveralls
+  - coverage run -m py.test tests
+  - coverage report
+  - coveralls
