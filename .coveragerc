@@ -24,7 +24,6 @@ exclude_lines =
 include =
     md-changelog/*
 omit =
-    md-changelog/tests/*
     md-changelog/assets/*
 
 ignore_errors = True

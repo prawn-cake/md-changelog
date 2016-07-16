@@ -1,7 +1,7 @@
 # System variables
 VIRTUAL_ENV=$(CURDIR)/.env
 PYTHON=$(VIRTUAL_ENV)/bin/python
-
+PY_VERSION=python3
 
 help:
 # target: help - Display callable targets
@@ -20,7 +20,7 @@ clean:
 .PHONY: env
 env:
 # target: env - create virtualenv and install packages
-	@virtualenv $(VIRTUAL_ENV)
+	@virtualenv --python=$(PY_VERSION) $(VIRTUAL_ENV)
 	@$(VIRTUAL_ENV)/bin/pip install -r $(CURDIR)/requirements-test.txt
 
 

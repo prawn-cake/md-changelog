@@ -5,3 +5,4 @@ coverage
 # For setuptools integration
 # More details on http://pytest.org/latest/goodpractices.html#integrating-with-setuptools-python-setup-py-test-pytest-runner
 pytest-runner
+pytest-pythonpath

@@ -5,7 +5,7 @@ class VcsBackend(object):
     """VCS utils backend interface"""
 
     def get_user_email(self):
-        pass
+        raise NotImplementedError()
 
     def get_user_name(self):
-        pass
+        raise NotImplementedError()

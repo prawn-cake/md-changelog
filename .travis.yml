@@ -8,9 +8,9 @@ install:
   - pip install --quiet coveralls
 
 script:
-  - py.test md_changelog/tests
+  - tox
 
 after_success:
-  coverage run -m py.test
+  coverage run -m py.test tests
   coverage report
   coveralls
