@@ -21,8 +21,6 @@ exclude_lines =
     if 0:
     if __name__ == .__main__.:
 
-include =
-    md-changelog/*
 omit =
     md-changelog/assets/*
 
