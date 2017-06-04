@@ -41,6 +41,7 @@ Handy command-line tool for managing changelog for your open source projects.
     md-changelog improvement "Code cleanup"
     md-changelog bugfix "Fixed main loop"
     md-changelog feature "Implemented new feature"
+    md-changelog breaking "Some breaking change"
     
     # Add multiple entries the same type at once
     md-changelog improvement --split-by=';' "Code cleanup; New command-line --split-by key; Improved feature X"
