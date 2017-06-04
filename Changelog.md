@@ -1,8 +1,12 @@
 Changelog
 =========
 
-0.1.3 (2016-07-10)
+0.1.3+1 (UNRELEASED)
 --------------------
+* [Feature] New [Breaking] message type
+
+0.1.3 (2016-07-10)
+------------------
 * Remove py27 support, keep only py3, too hassle to maintain it and time to move to be in the new era of python
 * [Feature] Added confirmation dialog for 'release' with support of rollback, added --force-yes key to disable it
 

@@ -62,6 +62,7 @@ def init(args):
         logger.debug('Init changelog: %s', file_path)
         with open(file_path, 'w') as fd:
             fd.write(INIT_TEMPLATE)
+        logger.debug('See `md-changelog -h` for more info')
         return True
 
     def init_config(path):
