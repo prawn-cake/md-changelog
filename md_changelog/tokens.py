@@ -133,11 +133,13 @@ class Date(Token):
 message_t = namedtuple('MESSAGE_TYPES', ['message',
                                          'feature',
                                          'bugfix',
-                                         'improvement'])
+                                         'improvement',
+                                         'breaking'])
 TYPES = message_t(message='',
                   feature='Feature',
                   bugfix='Bugfix',
-                  improvement='Improvement')
+                  improvement='Improvement',
+                  breaking='Breaking')
 
 
 class Message(Token):
