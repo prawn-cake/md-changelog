@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.1.3+1 (UNRELEASED)
+0.1.4 (2017-06-04)
 --------------------
 * [Feature] New [Breaking] message type
 
